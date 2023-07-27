@@ -1,0 +1,82 @@
+#!/bin/bash
+# https://www.debian.org/doc/debian-policy/ch-maintainerscripts.html
+set -e
+
+# add GemStone NetLDI to services to allow name lookup to port
+export x=`grep gs64ldi /etc/services`
+if [ -z "$x" ]
+then
+  echo "gs64ldi   50377/tcp   # GemStone/S 64 Bit" >> /etc/services
+fi
+
+# add GEMSTONE environment variable for all users
+export x=`grep GEMSTONE /etc/bash.bashrc`
+if [ -z "$x" ]
+then
+  echo "export GEMSTONE=/usr/share/gemstone" >> /etc/bash.bashrc
+  echo "export GEMSTONE_GLOBAL_DIR=/usr/share/gemstone" >> /etc/bash.bashrc
+  export GEMSTONE=/usr/share/gemstone
+fi
+
+export USERNAME='gemstone'
+# create `gemstone` user & group
+adduser --group --disabled-login --quiet --system $USERNAME
+chown -R $USERNAME:$USERNAME \
+  /etc/gemstone \
+  /run/gemstone \
+  /usr/include/gemstone \
+  /usr/lib/gemstone \
+  /usr/share/doc/gemstone \
+  /usr/share/gemstone \
+  /var/lib/gemstone \
+  /var/log/gemstone \
+  /usr/bin/netldid
+# run netldi as the gemstone user
+chmod u+s /usr/bin/netldid
+
+# install the initial database
+if [ ! -f "/var/lib/gemstone/gs64stone.dbf" ]; then
+  cp /usr/share/gemstone/data/extent0.dbf /var/lib/gemstone/gs64stone.dbf
+  chown $USERNAME:$USERNAME /var/lib/gemstone/gs64stone.dbf
+  chmod 660 /var/lib/gemstone/gs64stone.dbf
+  echo "VERSION" > /var/lib/gemstone/version.txt
+  echo "New database installed"
+else
+  export PRIOR=`cat version.txt`
+  # a database exists does it have the current version?
+  if [ "$PRIOR" == "VERSION" ]; then
+    echo "Database found and not replaced or modified"
+  else
+    echo "Database is $PRIOR and current version is VERSION"
+  fi
+fi
+
+# set up symbolic links for things GemStone expects
+if [ ! -f "/usr/share/gemstone/bin" ]; then
+  ln -s /usr/bin          /usr/share/gemstone/bin
+fi
+if [ ! -f "/usr/share/gemstone/lib" ]; then
+  ln -s /usr/lib/gemstone /usr/share/gemstone/lib
+fi
+if [ ! -f "/usr/share/gemstone/sys" ]; then
+  ln -s /usr/bin          /usr/share/gemstone/sys
+fi
+if [ ! -f "/usr/share/gemstone/locks" ]; then
+  ln -s /run/gemstone     /usr/share/gemstone/locks
+fi
+if [ ! -f "/usr/share/gemstone/log" ]; then
+  ln -s /var/log/gemstone /usr/share/gemstone/log
+fi
+# give gemstone ownership of product folders and links
+chown -h gemstone:gemstone /usr/share/gemstone/*
+
+# enable and start the services
+systemctl enable gs64ldi
+systemctl enable gs64stone
+systemctl start gs64ldi
+systemctl start gs64stone
+
+echo "'export GEMSTONE=/usr/share/gemstone' added to /etc/bash.bashrc"
+echo "'GEMSTONE_GLOBAL_DIR=/usr/share/gemstone' added to /etc/bash.bashrc"
+echo "Execute them manually or log out and log in again to use GemStone"
+exit 0 # if we got here then all went well!

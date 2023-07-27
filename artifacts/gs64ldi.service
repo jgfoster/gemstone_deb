@@ -1,0 +1,13 @@
+[Unit]
+Description=NetLDI Service for GemStone/S 64 Bit
+Documentation=https://gemtalksystems.com/products/gs64/
+
+[Service]
+ExecStart=gs64ldi start
+ExecStop=gs64ldi stop
+User=gemstone
+Group=gemstone
+TimeoutSec=15
+
+[Install]
+WantedBy=multi-user.target

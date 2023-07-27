@@ -1,0 +1,19 @@
+#!/bin/bash
+# sudo systemctl start gs64ldi
+# sudo journalctl -b -u gs64ldi
+export GEMSTONE=/usr/share/gemstone
+export GEMSTONE_GLOBAL_DIR=/usr/share/gemstone
+case $1 in
+start)
+    netldid \
+        -g -a $USER -n -N -D /var/log/gemstone \
+        -l /var/log/gemstone/gs64ldi.log \
+        gs64ldi
+    ;;
+stop)
+    stopnetldi gs64ldi
+    ;;
+*)
+    echo "Usage: gs64ldi [start|stop]"
+    ;;
+esac

@@ -1,0 +1,15 @@
+#!/bin/bash
+# sudo systemctl start gs64stone
+# sudo journalctl -b -u gs64stone
+export GEMSTONE=/usr/share/gemstone
+export GEMSTONE_GLOBAL_DIR=/usr/share/gemstone
+case $1 in
+start)
+    stoned \
+        -e /etc/gemstone/gs64stone.conf \
+        -l /var/log/gemstone/gs64stone.log \
+        -z /etc/gemstone/system.conf \
+        gs64stone;;
+stop)
+    stopstone -i gs64stone DataCurator swordfish
+esac

@@ -1,0 +1,16 @@
+[Unit]
+Description=GemStone/S 64 Bit
+Documentation=https://gemtalksystems.com/products/gs64/
+After=network.target
+After=systemd-user-sessions.service
+After=network-online.target
+
+[Service]
+ExecStart=gs64stone start
+ExecStop=gs64stone stop
+User=gemstone
+Group=gemstone
+TimeoutSec=60
+
+[Install]
+WantedBy=multi-user.target
