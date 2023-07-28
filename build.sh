@@ -4,16 +4,24 @@
 
 # sudo apt install -y fakeroot qemu-guest-agent unzip zip
 
+# dpkg --info ${PACKAGE_NAME}.deb
+# dpkg --contents ${PACKAGE_NAME}.deb
+# sudo dpkg --install /tmp/gemstone-server_*.deb
+# sudo dpkg --remove gemstone-server
+# sudo dpkg --purge gemstone-server
+# sudo apt remove ${PACKAGE_NAME}
+
 export VERSION="3.6.5"
+export PRIORITY="30605"
 export PACKAGE_NUM="1"
 export PACKAGE_NAME="gemstone-server_${VERSION}-${PACKAGE_NUM}_amd64"
-export BUILD_DIR="${PWD}/${PACKAGE_NAME}"
+export BUILD_DIR="/tmp/${PACKAGE_NAME}"
 export PRODUCT="/tmp/gemstone-server-$VERSION"
 export NAME=GemStone64Bit${VERSION}-x86_64.Linux
 
 # get rid of any existing build directory
-chmod -R 777 gemstone-server_* 2>/dev/null
-rm -rf gemstone-server_* 2>/dev/null
+chmod -R 777 /tmp/gemstone-server_* 2>/dev/null
+rm -rf /tmp/gemstone-server_* 2>/dev/null
 
 # get the product tree
 if [ ! -f $PRODUCT.zip ]
@@ -31,101 +39,34 @@ fi
 echo "create the package environment"
 mkdir -p $BUILD_DIR \
   $BUILD_DIR/DEBIAN \
+  $BUILD_DIR/etc/alternatives \
   $BUILD_DIR/etc/gemstone \
   $BUILD_DIR/etc/systemd/system \
-  $BUILD_DIR/opt/gemstone \
   $BUILD_DIR/run/gemstone \
   $BUILD_DIR/usr/bin \
-  $BUILD_DIR/usr/include/gemstone \
-  $BUILD_DIR/usr/lib/gemstone \
-  $BUILD_DIR/usr/share/doc/gemstone \
-  $BUILD_DIR/usr/share/man/man1 \
-  $BUILD_DIR/usr/share/man/man5 \
-  $BUILD_DIR/usr/share/man/man8 \
-  $BUILD_DIR/usr/share/gemstone \
-  $BUILD_DIR/usr/share/gemstone/data \
-  $BUILD_DIR/usr/share/man \
+  $BUILD_DIR/usr/lib \
+  $BUILD_DIR/usr/lib/gemstone/$VERSION \
   $BUILD_DIR/var/lib/gemstone \
   $BUILD_DIR/var/log/gemstone
 
-echo "copy files from product tree to package environment"
+# copy the entire product tree
+cp -r $PRODUCT/* $BUILD_DIR/usr/lib/gemstone/$VERSION
+
 # /etc/gemstone will contain config files
-cp artifacts/gs64stone.conf           $BUILD_DIR/etc/gemstone
-cp artifacts/gem.conf                 $BUILD_DIR/etc/gemstone
-cp $PRODUCT/data/system.conf          $BUILD_DIR/etc/gemstone
-cp $PRODUCT/sys/community.starter.key $BUILD_DIR/etc/gemstone/gemstone.key
+cp artifacts/gs64stone.conf               $BUILD_DIR/etc/gemstone
+cp artifacts/gem.conf                     $BUILD_DIR/etc/gemstone
+cp $PRODUCT/data/system.conf              $BUILD_DIR/etc/gemstone
+cp $PRODUCT/sys/community.starter.key     $BUILD_DIR/etc/gemstone/gemstone.key
 
 # /etc/systemd/system contains files to control start/stop of services
-cp artifacts/gs64stone.service        $BUILD_DIR/etc/systemd/system/
-cp artifacts/gs64ldi.service          $BUILD_DIR/etc/systemd/system/
+cp artifacts/gs64stone.service            $BUILD_DIR/etc/systemd/system/
+cp artifacts/gs64ldi.service              $BUILD_DIR/etc/systemd/system/
 
 # /run/gemstone will contain runtime lock files (traditionally /opt/gemstone/locks)
 
-# /usr/bin contains distribution-managed normal user programs (executables)
-# the traditional GemStone distribution split these between bin and sys
-cp $PRODUCT/bin/copydbf \
-  $PRODUCT/bin/gslist \
-  $PRODUCT/bin/pageaudit \
-  $PRODUCT/bin/pstack \
-  $PRODUCT/bin/searchlogs \
-  $PRODUCT/bin/startcachewarmer \
-  $PRODUCT/bin/startnetldi \
-  $PRODUCT/bin/startstone \
-  $PRODUCT/bin/statmonitor \
-  $PRODUCT/bin/stopnetldi \
-  $PRODUCT/bin/stopstone \
-  $PRODUCT/bin/superdoit_solo \
-  $PRODUCT/bin/superdoit_stone \
-  $PRODUCT/bin/topaz \
-  $PRODUCT/bin/upgradeImage \
-  $PRODUCT/bin/waitstone \
-  $PRODUCT/sys/gemnetdebug \
-  $PRODUCT/sys/gemnetobject \
-  $PRODUCT/sys/gemnetobject_keeplog \
-  $PRODUCT/sys/netldid \
-  $PRODUCT/sys/pgsvr \
-  $PRODUCT/sys/pgsvrmain \
-  $PRODUCT/sys/pgsvrmainl \
-  $PRODUCT/sys/runadmingcgem \
-  $PRODUCT/sys/runcachepgsvr \
-  $PRODUCT/sys/runcachewarmergem \
-  $PRODUCT/sys/runpageauditgem \
-  $PRODUCT/sys/runpgsvr \
-  $PRODUCT/sys/runreclaimgcgem \
-  $PRODUCT/sys/runstatmonitor \
-  $PRODUCT/sys/runsymbolgem \
-  $PRODUCT/sys/shrpcmonitor \
-  $PRODUCT/sys/startchild \
-  $PRODUCT/sys/stoned \
-  $BUILD_DIR/usr/bin
 # these files are not distributed with GemStone but used to start/stop it
-cp artifacts/gs64ldi              $BUILD_DIR/usr/bin
-cp artifacts/gs64stone            $BUILD_DIR/usr/bin
-# netldi will look for this in $GEMSTONE/sys so needs to be here as well
-# see http://kermit.gemtalksystems.com/bug?bug=50614 for a fix
-cp $PRODUCT/sys/services.dat      $BUILD_DIR/usr/bin
-
-# /usr/include/gemstone provides standard include files
-cp $PRODUCT/include/*             $BUILD_DIR/usr/include/gemstone
-
-# /usr/lib/gemstone contains libraries for the binaries in /usr/bin
-cp $PRODUCT/lib/*.so              $BUILD_DIR/usr/lib/gemstone
-
-# /usr/share/doc/gemstone contains general documentation
-cp $PRODUCT/doc/*.txt             $BUILD_DIR/usr/share/doc/gemstone/
-cp -r $PRODUCT/licenses           $BUILD_DIR/usr/share/doc/gemstone
-
-# /usr/share/man/ contain man pages in gz format
-(cd $PRODUCT/doc/man1/; ls | xargs -I{} tar -czf $BUILD_DIR/usr/share/man/man1/{}.gz {})
-(cd $PRODUCT/doc/man5/; ls | xargs -I{} tar -czf $BUILD_DIR/usr/share/man/man5/{}.gz {})
-(cd $PRODUCT/doc/man8/; ls | xargs -I{} tar -czf $BUILD_DIR/usr/share/man/man8/{}.gz {})
-
-# /usr/share/ is for architecture-independent (shared) data
-# we will use /usr/share/gemstone for the traditional $GEMSTONE
-cp -r $PRODUCT/rowan              $BUILD_DIR/usr/share/gemstone
-cp -r $PRODUCT/seaside            $BUILD_DIR/usr/share/gemstone
-cp -r $PRODUCT/upgrade            $BUILD_DIR/usr/share/gemstone
-cp $PRODUCT/bin/extent0*.dbf      $BUILD_DIR/usr/share/gemstone/data
+cp artifacts/gs64ldi                      $BUILD_DIR/usr/bin
+cp artifacts/gs64stone                    $BUILD_DIR/usr/bin
 
 # /var/lib/gemstone will contain the database and transaction logs
 # /var/log/gemstone will contain the log files
@@ -139,18 +80,9 @@ sed -i "s/SIZE/$SIZE/g"           $BUILD_DIR/DEBIAN/control
 sed -i "s/DATE/$DATE/g"           $BUILD_DIR/DEBIAN/control
 cp artifacts/postinst             $BUILD_DIR/DEBIAN
 sed -i "s/VERSION/$VERSION/g"     $BUILD_DIR/DEBIAN/postinst
+sed -i "s/PRIORITY/$PRIORITY/g"   $BUILD_DIR/DEBIAN/postinst
 
 # build the package
 date
-time fakeroot dpkg-deb --build $BUILD_DIR   # five minutes?
+time fakeroot dpkg-deb --build $BUILD_DIR   # 8+ minutes
 date
-
-# inspect the package
-# dpkg-deb --info ${PACKAGE_NAME}.deb
-# view contents of the package
-# dpkg-deb --contents ${PACKAGE_NAME}.deb
-# install the package
-# sudo dpkg --install ${PACKAGE_NAME}.deb
-# remove the package
-# sudo dpkg --remove ${PACKAGE_NAME}
-# sudo apt remove ${PACKAGE_NAME}

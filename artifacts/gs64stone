@@ -12,4 +12,8 @@ start)
         gs64stone;;
 stop)
     stopstone -i gs64stone DataCurator swordfish
+    ;;
+*)
+    echo "Usage: gs64stone [start|stop]"
+    ;;
 esac

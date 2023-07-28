@@ -14,8 +14,7 @@ export x=`grep GEMSTONE /etc/bash.bashrc`
 if [ -z "$x" ]
 then
   echo "export GEMSTONE=/usr/share/gemstone" >> /etc/bash.bashrc
-  echo "export GEMSTONE_GLOBAL_DIR=/usr/share/gemstone" >> /etc/bash.bashrc
-  export GEMSTONE=/usr/share/gemstone
+  echo "export GEMSTONE_GLOBAL_DIR=/usr/lib/gemstone" >> /etc/bash.bashrc
 fi
 
 export USERNAME='gemstone'
@@ -24,57 +23,61 @@ adduser --group --disabled-login --quiet --system $USERNAME
 chown -R $USERNAME:$USERNAME \
   /etc/gemstone \
   /run/gemstone \
-  /usr/include/gemstone \
-  /usr/lib/gemstone \
-  /usr/share/doc/gemstone \
-  /usr/share/gemstone \
   /var/lib/gemstone \
-  /var/log/gemstone \
-  /usr/bin/netldid
+  /var/log/gemstone
 # run netldi as the gemstone user
-chmod u+s /usr/bin/netldid
+chmod u+s /usr/lib/gemstone/VERSION/sys/netldid
 
 # install the initial database
 if [ ! -f "/var/lib/gemstone/gs64stone.dbf" ]; then
-  cp /usr/share/gemstone/data/extent0.dbf /var/lib/gemstone/gs64stone.dbf
+  cp /usr/lib/gemstone/VERSION/bin/extent0.dbf /var/lib/gemstone/gs64stone.dbf
   chown $USERNAME:$USERNAME /var/lib/gemstone/gs64stone.dbf
   chmod 660 /var/lib/gemstone/gs64stone.dbf
-  echo "VERSION" > /var/lib/gemstone/version.txt
   echo "New database installed"
-else
-  export PRIOR=`cat version.txt`
-  # a database exists does it have the current version?
-  if [ "$PRIOR" == "VERSION" ]; then
-    echo "Database found and not replaced or modified"
-  else
-    echo "Database is $PRIOR and current version is VERSION"
-  fi
 fi
 
-# set up symbolic links for things GemStone expects
-if [ ! -f "/usr/share/gemstone/bin" ]; then
-  ln -s /usr/bin          /usr/share/gemstone/bin
-fi
-if [ ! -f "/usr/share/gemstone/lib" ]; then
-  ln -s /usr/lib/gemstone /usr/share/gemstone/lib
-fi
-if [ ! -f "/usr/share/gemstone/sys" ]; then
-  ln -s /usr/bin          /usr/share/gemstone/sys
-fi
-if [ ! -f "/usr/share/gemstone/locks" ]; then
-  ln -s /run/gemstone     /usr/share/gemstone/locks
-fi
-if [ ! -f "/usr/share/gemstone/log" ]; then
-  ln -s /var/log/gemstone /usr/share/gemstone/log
-fi
 # give gemstone ownership of product folders and links
-chown -h gemstone:gemstone /usr/share/gemstone/*
+chown -hR gemstone:gemstone /usr/lib/gemstone/VERSION
 
-# enable and start the services
-systemctl enable gs64ldi
-systemctl enable gs64stone
-systemctl start gs64ldi
-systemctl start gs64stone
+# set up alternatives - https://manpages.ubuntu.com/manpages/jammy/en/man1/update-alternatives.1.html
+# (shortcut for long name!)
+export verify_backup=verify_backup_with_openssl
+update-alternatives --install /usr/share/gemstone gemstone /usr/lib/gemstone/VERSION PRIORITY         \
+  --slave /usr/bin/copydbf          copydbf           /usr/lib/gemstone/VERSION/bin/copydbf           \
+  --slave /usr/bin/gslist           gslist            /usr/lib/gemstone/VERSION/bin/gslist            \
+  --slave /usr/bin/netldid          netldid           /usr/lib/gemstone/VERSION/sys/netldid           \
+  --slave /usr/bin/netldidebug      netldidebug       /usr/lib/gemstone/VERSION/bin/netldidebug       \
+  --slave /usr/bin/pageaudit        pageaudit         /usr/lib/gemstone/VERSION/bin/pageaudit         \
+  --slave /usr/bin/printlogs        printlogs         /usr/lib/gemstone/VERSION/bin/printlogs         \
+  --slave /usr/bin/pstack           pstack            /usr/lib/gemstone/VERSION/bin/pstack            \
+  --slave /usr/bin/removedbf        removedbf         /usr/lib/gemstone/VERSION/bin/removedbf         \
+  --slave /usr/bin/searchlogs       searchlogs        /usr/lib/gemstone/VERSION/bin/searchlogs        \
+  --slave /usr/bin/startcachewarmer startcachewarmer  /usr/lib/gemstone/VERSION/bin/startcachewarmer  \
+  --slave /usr/bin/starthostagent   starthostagent    /usr/lib/gemstone/VERSION/bin/starthostagent    \
+  --slave /usr/bin/startlogreceiver startlogreceiver  /usr/lib/gemstone/VERSION/bin/startlogreceiver  \
+  --slave /usr/bin/startlogsender   startlogsender    /usr/lib/gemstone/VERSION/bin/startlogsender    \
+  --slave /usr/bin/startnetldi      startnetldi       /usr/lib/gemstone/VERSION/bin/startnetldi       \
+  --slave /usr/bin/startstone       startstone        /usr/lib/gemstone/VERSION/bin/startstone        \
+  --slave /usr/bin/statmonitor      statmonitor       /usr/lib/gemstone/VERSION/bin/statmonitor       \
+  --slave /usr/bin/stoned           stoned            /usr/lib/gemstone/VERSION/sys/stoned            \
+  --slave /usr/bin/stophostagent    stophostagent     /usr/lib/gemstone/VERSION/bin/stophostagent     \
+  --slave /usr/bin/stoplogreceiver  stoplogreceiver   /usr/lib/gemstone/VERSION/bin/stoplogreceiver   \
+  --slave /usr/bin/stoplogsender    stoplogsender     /usr/lib/gemstone/VERSION/bin/stoplogsender     \
+  --slave /usr/bin/stopnetldi       stopnetldi        /usr/lib/gemstone/VERSION/bin/stopnetldi        \
+  --slave /usr/bin/stopstone        stopstone         /usr/lib/gemstone/VERSION/bin/stopstone         \
+  --slave /usr/bin/superdoit_solo   superdoit_solo    /usr/lib/gemstone/VERSION/bin/superdoit_solo    \
+  --slave /usr/bin/superdoit_stone  superdoit_stone   /usr/lib/gemstone/VERSION/bin/superdoit_stone   \
+  --slave /usr/bin/topaz            topaz             /usr/lib/gemstone/VERSION/bin/topaz             \
+  --slave /usr/bin/updatesecuredbf  updatesecuredbf   /usr/lib/gemstone/VERSION/bin/updatesecuredbf   \
+  --slave /usr/bin/upgradeImage     upgradeImage      /usr/lib/gemstone/VERSION/bin/upgradeImage      \
+  --slave /usr/bin/$verify_backup   $verify_backup    /usr/lib/gemstone/VERSION/bin/$verify_backup    \
+  --slave /usr/bin/vsd              vsd               /usr/lib/gemstone/VERSION/bin/vsd
+
+# # enable and start the services
+# systemctl enable gs64ldi
+# systemctl enable gs64stone
+# systemctl start gs64ldi
+# systemctl start gs64stone
 
 echo "'export GEMSTONE=/usr/share/gemstone' added to /etc/bash.bashrc"
 echo "'GEMSTONE_GLOBAL_DIR=/usr/share/gemstone' added to /etc/bash.bashrc"
