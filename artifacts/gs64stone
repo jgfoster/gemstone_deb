@@ -2,7 +2,7 @@
 # sudo systemctl start gs64stone
 # sudo journalctl -b -u gs64stone
 export GEMSTONE=/usr/share/gemstone
-export GEMSTONE_GLOBAL_DIR=/usr/share/gemstone
+export GEMSTONE_GLOBAL_DIR=/var/lib/gemstone
 case $1 in
 start)
     stoned \

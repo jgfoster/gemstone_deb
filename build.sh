@@ -47,7 +47,11 @@ mkdir -p $BUILD_DIR \
   $BUILD_DIR/usr/lib \
   $BUILD_DIR/usr/lib/gemstone/$VERSION \
   $BUILD_DIR/var/lib/gemstone \
+  $BUILD_DIR/var/lib/gemstone/data \
   $BUILD_DIR/var/log/gemstone
+
+ln -s /run/gemstone $BUILD_DIR/var/lib/gemstone/locks
+ln -s /var/log/gemstone $BUILD_DIR/var/lib/gemstone/log
 
 # copy the entire product tree
 cp -r $PRODUCT/* $BUILD_DIR/usr/lib/gemstone/$VERSION
@@ -68,7 +72,9 @@ cp artifacts/gs64ldi.service              $BUILD_DIR/etc/systemd/system/
 cp artifacts/gs64ldi                      $BUILD_DIR/usr/bin
 cp artifacts/gs64stone                    $BUILD_DIR/usr/bin
 
-# /var/lib/gemstone will contain the database and transaction logs
+# /usr/bin has symbolic links to executables
+# /usr/lib/gemstone/VERION has the product tree
+# /var/lib/gemstone/data will contain the database and transaction logs
 # /var/log/gemstone will contain the log files
 
 export DATE=`date +"%a, %d %B %Y %H:%M:%S %z"`

@@ -14,7 +14,7 @@ export x=`grep GEMSTONE /etc/bash.bashrc`
 if [ -z "$x" ]
 then
   echo "export GEMSTONE=/usr/share/gemstone" >> /etc/bash.bashrc
-  echo "export GEMSTONE_GLOBAL_DIR=/usr/lib/gemstone" >> /etc/bash.bashrc
+  echo "export GEMSTONE_GLOBAL_DIR=/var/lib/gemstone" >> /etc/bash.bashrc
 fi
 
 export USERNAME='gemstone'
@@ -30,9 +30,9 @@ chmod u+s /usr/lib/gemstone/VERSION/sys/netldid
 
 # install the initial database
 if [ ! -f "/var/lib/gemstone/gs64stone.dbf" ]; then
-  cp /usr/lib/gemstone/VERSION/bin/extent0.dbf /var/lib/gemstone/gs64stone.dbf
-  chown $USERNAME:$USERNAME /var/lib/gemstone/gs64stone.dbf
-  chmod 660 /var/lib/gemstone/gs64stone.dbf
+  cp /usr/lib/gemstone/VERSION/bin/extent0.dbf /var/lib/gemstone/data/gs64stone.dbf
+  chown $USERNAME:$USERNAME /var/lib/gemstone/data/gs64stone.dbf
+  chmod 660 /var/lib/gemstone/data/gs64stone.dbf
   echo "New database installed"
 fi
 
@@ -74,12 +74,12 @@ update-alternatives --install /usr/share/gemstone gemstone /usr/lib/gemstone/VER
   --slave /usr/bin/vsd              vsd               /usr/lib/gemstone/VERSION/bin/vsd
 
 # # enable and start the services
-# systemctl enable gs64ldi
-# systemctl enable gs64stone
-# systemctl start gs64ldi
-# systemctl start gs64stone
+systemctl enable gs64ldi
+systemctl enable gs64stone
+systemctl start gs64ldi
+systemctl start gs64stone
 
-echo "'export GEMSTONE=/usr/share/gemstone' added to /etc/bash.bashrc"
-echo "'GEMSTONE_GLOBAL_DIR=/usr/share/gemstone' added to /etc/bash.bashrc"
+echo "'export GEMSTONE=/usr/share/gemstone' added to /etc/bash.bashrc script."
+echo "'export GEMSTONE_GLOBAL_DIR=/var/lib/gemstone' added to /etc/bash.bashrc script."
 echo "Execute them manually or log out and log in again to use GemStone"
 exit 0 # if we got here then all went well!
