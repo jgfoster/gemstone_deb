@@ -1,0 +1,10 @@
+#!/bin/bash
+# https://www.debian.org/doc/debian-policy/ch-maintainerscripts.html
+set -e
+echo "\"$0\" \"$1\" \"$2\" \"$3\""
+
+# stop GemStone services
+systemctl stop gs64ldi
+systemctl stop gs64stone
+
+exit 0 # if we got here then all went well!

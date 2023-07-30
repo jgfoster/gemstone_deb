@@ -3,8 +3,8 @@ Description=NetLDI Service for GemStone/S 64 Bit
 Documentation=https://gemtalksystems.com/products/gs64/
 
 [Service]
-ExecStart=gs64ldi start
-ExecStop=gs64ldi stop
+ExecStart=netldid -g -a gemstone -n -N -D /var/log/gemstone -l /var/log/gemstone/gs64ldi.log gs64ldi
+ExecStop=stopnetldi gs64ldi
 User=gemstone
 Group=gemstone
 TimeoutSec=15

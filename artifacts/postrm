@@ -1,0 +1,37 @@
+#!/bin/bash
+# https://www.debian.org/doc/debian-policy/ch-maintainerscripts.html
+set -e
+echo "\"$0\" \"$1\" \"$2\" \"$3\""
+
+# is there another installation of GemStone?
+if [ -d "/usr/lib/gemstone" ]; then
+	if [ "$(ls -A /usr/lib/gemstone/)" ]; then
+    keep="1"
+	else
+    keep="0"
+	fi
+fi
+# if no other versions of GemStone...
+if [ $keep = "0" ]; then
+  # remove GemStone NetLDI from services
+  x=`grep gs64ldi /etc/services`
+  if [ ! -z "$x" ]; then
+    sed -i '/gs64ldi   50377/tcp   # GemStone/S 64 Bit/d' /etc/services
+  fi
+  # remove GEMSTONE environment variables
+  x=`grep GEMSTONE /etc/environment`
+  if [ ! -z "$x" ]
+  then
+    sed -i '/export GEMSTONE=/usr/share/gemstone/d' /etc/environment
+    sed -i 'export GEMSTONE_GLOBAL_DIR=/var/lib/gemstone/d' /etc/environment
+    echo "" >> /etc/environment
+    echo "" >> /etc/environment
+  fi
+  deluser gemstone
+fi
+
+
+# set up alternatives - https://manpages.ubuntu.com/manpages/jammy/en/man1/update-alternatives.1.html
+update-alternatives --remove gemstone /usr/lib/gemstone/VERSION
+
+exit 0 # if we got here then all went well!

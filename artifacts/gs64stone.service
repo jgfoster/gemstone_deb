@@ -6,8 +6,8 @@ After=systemd-user-sessions.service
 After=network-online.target
 
 [Service]
-ExecStart=gs64stone start
-ExecStop=gs64stone stop
+ExecStart=stoned -e /etc/gemstone/gs64stone.conf -l /var/log/gemstone/gs64stone.log -z /etc/gemstone/system.conf gs64stone
+ExecStop=stopstone -i gs64stone DataCurator swordfish
 User=gemstone
 Group=gemstone
 TimeoutSec=60

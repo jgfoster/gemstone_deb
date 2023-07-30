@@ -44,10 +44,9 @@ mkdir -p $BUILD_DIR \
   $BUILD_DIR/etc/systemd/system \
   $BUILD_DIR/run/gemstone \
   $BUILD_DIR/usr/bin \
-  $BUILD_DIR/usr/lib \
   $BUILD_DIR/usr/lib/gemstone/$VERSION \
-  $BUILD_DIR/var/lib/gemstone \
   $BUILD_DIR/var/lib/gemstone/data \
+  $BUILD_DIR/var/lib/gemstone/tranlogs \
   $BUILD_DIR/var/log/gemstone
 
 ln -s /run/gemstone $BUILD_DIR/var/lib/gemstone/locks
@@ -68,10 +67,6 @@ cp artifacts/gs64ldi.service              $BUILD_DIR/etc/systemd/system/
 
 # /run/gemstone will contain runtime lock files (traditionally /opt/gemstone/locks)
 
-# these files are not distributed with GemStone but used to start/stop it
-cp artifacts/gs64ldi                      $BUILD_DIR/usr/bin
-cp artifacts/gs64stone                    $BUILD_DIR/usr/bin
-
 # /usr/bin has symbolic links to executables
 # /usr/lib/gemstone/VERION has the product tree
 # /var/lib/gemstone/data will contain the database and transaction logs
@@ -87,6 +82,9 @@ sed -i "s/DATE/$DATE/g"           $BUILD_DIR/DEBIAN/control
 cp artifacts/postinst             $BUILD_DIR/DEBIAN
 sed -i "s/VERSION/$VERSION/g"     $BUILD_DIR/DEBIAN/postinst
 sed -i "s/PRIORITY/$PRIORITY/g"   $BUILD_DIR/DEBIAN/postinst
+cp artifacts/prerm                $BUILD_DIR/DEBIAN
+cp artifacts/postrm               $BUILD_DIR/DEBIAN
+sed -i "s/VERSION/$VERSION/g"     $BUILD_DIR/DEBIAN/postrm
 
 # build the package
 date
