@@ -1,24 +1,24 @@
-#!/bin/bash
+#!/bin/sh -e
 # https://www.debian.org/doc/debian-policy/ch-maintainerscripts.html
-set -e
 # echo "\"$0\" \"$1\" \"$2\" \"$3\""
 
+. /usr/share/debconf/confmodule
+
 # add GemStone NetLDI to services to allow name lookup to port
-export x=`grep gs64ldi /etc/services`
-if [ -z "$x" ]
-then
+# but see https://www.debian.org/doc/debian-policy/ch-customized-programs.html#daemons
+x=`grep gs64ldi /etc/services` || true
+if [ -z "$x" ]; then
   echo "gs64ldi   50377/tcp   # GemStone/S 64 Bit" >> /etc/services
 fi
 
 # add GEMSTONE environment variable for all users
-export x=`grep GEMSTONE /etc/environment`
-if [ -z "$x" ]
-then
+x=`grep GEMSTONE /etc/environment` || true
+if [ -z "$x" ]; then
   echo "GEMSTONE=/usr/share/gemstone" >> /etc/environment
   echo "GEMSTONE_GLOBAL_DIR=/var/lib/gemstone" >> /etc/environment
 fi
 
-export USERNAME='gemstone'
+USERNAME='gemstone'
 # create `gemstone` user & group
 adduser --group --disabled-login --quiet --system $USERNAME
 chown -R $USERNAME:$USERNAME \
@@ -40,7 +40,7 @@ chown -hR gemstone:gemstone /usr/lib/gemstone/VERSION
 
 # set up alternatives - https://manpages.ubuntu.com/manpages/jammy/en/man1/update-alternatives.1.html
 # (shortcut for long name!)
-export verify_backup=verify_backup_with_openssl
+verify_backup=verify_backup_with_openssl
 update-alternatives --install /usr/share/gemstone gemstone /usr/lib/gemstone/VERSION PRIORITY         \
   --slave /usr/bin/copydbf          copydbf           /usr/lib/gemstone/VERSION/bin/copydbf           \
   --slave /usr/bin/gslist           gslist            /usr/lib/gemstone/VERSION/bin/gslist            \

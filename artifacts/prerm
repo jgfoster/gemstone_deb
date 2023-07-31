@@ -1,7 +1,8 @@
-#!/bin/bash
+#!/bin/sh -e
 # https://www.debian.org/doc/debian-policy/ch-maintainerscripts.html
-set -e
 # echo "\"$0\" \"$1\" \"$2\" \"$3\""
+
+. /usr/share/debconf/confmodule
 
 # stop GemStone services
 systemctl stop gs64ldi

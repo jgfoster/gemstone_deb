@@ -1,33 +1,34 @@
-#!/bin/bash
+#!/bin/sh -e
 # https://www.debian.org/doc/debian-policy/ch-maintainerscripts.html
-set -e
 # echo "\"$0\" \"$1\" \"$2\" \"$3\""
 
+. /usr/share/debconf/confmodule
+
 # is there another installation of GemStone?
+keep="0"
 if [ -d "/usr/lib/gemstone" ]; then
-	if [ "$(ls -A /usr/lib/gemstone/)" ]; then
+  if [ "$(ls -A /usr/lib/gemstone/)" ]; then
     keep="1"
-	else
-    keep="0"
-	fi
+  fi
 fi
 # if no other versions of GemStone...
 if [ "$keep" = "0" ]; then
   # remove GemStone NetLDI from services
-  x=`grep gs64ldi /etc/services`
+  x=`grep gs64ldi /etc/services` || true
   if [ ! -z "$x" ]; then
-    sed -i '/gs64ldi   50377/tcp   # GemStone/S 64 Bit/d' /etc/services
+    sed -i '\:gs64ldi   50377/tcp   # GemStone/S 64 Bit:d' /etc/services
   fi
   # remove GEMSTONE environment variables
-  x=`grep GEMSTONE /etc/environment`
-  if [ ! -z "$x" ]
-  then
-    sed -i '/export GEMSTONE=/usr/share/gemstone/d' /etc/environment
-    sed -i 'export GEMSTONE_GLOBAL_DIR=/var/lib/gemstone/d' /etc/environment
-    echo "" >> /etc/environment
-    echo "" >> /etc/environment
+  x=`grep GEMSTONE /etc/environment` || true
+  if [ ! -z "$x" ]; then
+    sed -i '\:GEMSTONE=/usr/share/gemstone:d' /etc/environment
+    sed -i '\:GEMSTONE_GLOBAL_DIR=/var/lib/gemstone:d' /etc/environment
   fi
-  deluser gemstone
+  if [ "$1" = "purge" ]; then
+    rm -rf /var/log/gemstone /var/lib/gemstone /run/gemstone
+    deluser gemstone || true
+    delgroup gemstone || true
+  fi
 fi
 
 exit 0 # if we got here then all went well!

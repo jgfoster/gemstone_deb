@@ -10,3 +10,4 @@ Urgency: medium (normal bugfixes)
 Installed-Size: SIZE
 Homepage: https://gemtalksystems.com/products/gs64/
 Package-Type: deb
+Pre-Depends: debconf (>= 0.2.17)
