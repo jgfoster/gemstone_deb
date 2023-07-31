@@ -1,11 +1,11 @@
 [Unit]
 Description=GemStone/S 64 Bit
 Documentation=https://gemtalksystems.com/products/gs64/
-After=network.target
 After=systemd-user-sessions.service
 After=network-online.target
 
 [Service]
+Environment=GEMSTONE=/usr/share/gemstone GEMSTONE_GLOBAL_DIR=/var/lib/gemstone
 ExecStart=stoned -e /etc/gemstone/gs64stone.conf -l /var/log/gemstone/gs64stone.log -z /etc/gemstone/system.conf gs64stone
 ExecStop=stopstone -i gs64stone DataCurator swordfish
 User=gemstone

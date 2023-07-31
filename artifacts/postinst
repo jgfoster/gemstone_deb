@@ -1,7 +1,7 @@
 #!/bin/bash
 # https://www.debian.org/doc/debian-policy/ch-maintainerscripts.html
 set -e
-echo "\"$0\" \"$1\" \"$2\" \"$3\""
+# echo "\"$0\" \"$1\" \"$2\" \"$3\""
 
 # add GemStone NetLDI to services to allow name lookup to port
 export x=`grep gs64ldi /etc/services`
@@ -20,8 +20,7 @@ fi
 
 export USERNAME='gemstone'
 # create `gemstone` user & group
-# adduser --group --disabled-login --quiet --system $USERNAME
-adduser --group --quiet --system $USERNAME
+adduser --group --disabled-login --quiet --system $USERNAME
 chown -R $USERNAME:$USERNAME \
   /etc/gemstone \
   /run/gemstone \
@@ -32,7 +31,7 @@ chown -R $USERNAME:$USERNAME \
 if [ ! -f "/var/lib/gemstone/gs64stone.dbf" ]; then
   cp /usr/lib/gemstone/VERSION/bin/extent0.dbf /var/lib/gemstone/data/gs64stone.dbf
   chown $USERNAME:$USERNAME /var/lib/gemstone/data/gs64stone.dbf
-  chmod 660 /var/lib/gemstone/data/gs64stone.dbf
+  chmod 666 /var/lib/gemstone/data/gs64stone.dbf
   echo "New database installed"
 fi
 

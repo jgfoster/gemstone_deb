@@ -1,7 +1,7 @@
 #!/bin/bash
 # https://www.debian.org/doc/debian-policy/ch-maintainerscripts.html
 set -e
-echo "\"$0\" \"$1\" \"$2\" \"$3\""
+# echo "\"$0\" \"$1\" \"$2\" \"$3\""
 
 # is there another installation of GemStone?
 if [ -d "/usr/lib/gemstone" ]; then
@@ -12,7 +12,7 @@ if [ -d "/usr/lib/gemstone" ]; then
 	fi
 fi
 # if no other versions of GemStone...
-if [ $keep = "0" ]; then
+if [ "$keep" = "0" ]; then
   # remove GemStone NetLDI from services
   x=`grep gs64ldi /etc/services`
   if [ ! -z "$x" ]; then
@@ -29,9 +29,5 @@ if [ $keep = "0" ]; then
   fi
   deluser gemstone
 fi
-
-
-# set up alternatives - https://manpages.ubuntu.com/manpages/jammy/en/man1/update-alternatives.1.html
-update-alternatives --remove gemstone /usr/lib/gemstone/VERSION
 
 exit 0 # if we got here then all went well!
