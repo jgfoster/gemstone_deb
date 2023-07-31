@@ -1,0 +1,20 @@
+#!/bin/bash
+topaz -l << EOF
+iferr 1 stk
+iferr 2 exit 1
+set user DataCurator
+set pass swordfish
+set gems gs64stone
+login
+send SystemRepository markForCollection
+send SystemRepository reclaimAll
+send SystemRepository startNewLog
+run
+| path |
+path := '/var/lib/gemstone/backups/gs64stone-'.
+path := path , DateAndTime now asString , '.bak'.
+SystemRepository fullBackupLz4CompressedTo: path.
+%
+logout
+exit
+EOF
