@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -e
 # https://www.debian.org/doc/manuals/maint-guide/index.en.html 
 # http://www.hackgnar.com/2016/01/simple-deb-package-creation.html 
 # https://en.wikipedia.org/wiki/Filesystem_Hierarchy_Standard 
@@ -80,6 +80,8 @@ cp -r $PRODUCT/* $BUILD_DIR/usr/lib/gemstone/$VERSION
 export DATE=`date +"%a, %d %B %Y %H:%M:%S %z"`
 export SIZE=`du -s -k $BUILD_DIR | cut -f1`
 # finally, we have the files used to create and install the package
+cp artifacts/templates                  $BUILD_DIR/DEBIAN
+cp artifacts/config                     $BUILD_DIR/DEBIAN
 cp artifacts/control                    $BUILD_DIR/DEBIAN
 cp artifacts/postinst                   $BUILD_DIR/DEBIAN
 cp artifacts/prerm                      $BUILD_DIR/DEBIAN

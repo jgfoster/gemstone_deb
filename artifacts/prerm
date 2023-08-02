@@ -1,6 +1,6 @@
 #!/bin/sh -e
 # https://www.debian.org/doc/debian-policy/ch-maintainerscripts.html
-# echo "\"$0\" \"$1\" \"$2\" \"$3\""
+# >&2 echo "\"$0\" \"$1\" \"$2\" \"$3\""
 
 . /usr/share/debconf/confmodule
 

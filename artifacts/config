@@ -1,0 +1,6 @@
+#!/bin/sh -e
+. /usr/share/debconf/confmodule
+
+db_input high gemstone-server/password-initial || true
+db_input high gemstone-server/password-confirm || true
+db_go || true

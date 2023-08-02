@@ -1,8 +1,17 @@
 #!/bin/sh -e
 # https://www.debian.org/doc/debian-policy/ch-maintainerscripts.html
-# echo "\"$0\" \"$1\" \"$2\" \"$3\""
+>&2 echo "\"$0\" \"$1\" \"$2\" \"$3\""
+export DEBCONF_DEBUG=developer
 
 . /usr/share/debconf/confmodule
+
+db_get gemstone-server/password-initial || x=$? || true
+password1=$RET
+>&2 echo "password1 is \"$password1\""
+>&2 echo "exit code is \"$x\""
+db_get gemstone-server/password-confirm
+password2=$RET
+>&2 echo "password2 is \"$password2\""
 
 # add GemStone NetLDI to services to allow name lookup to port
 # but see https://www.debian.org/doc/debian-policy/ch-customized-programs.html#daemons

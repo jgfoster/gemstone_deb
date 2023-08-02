@@ -1,0 +1,8 @@
+Template: gemstone-server/password-initial
+Type: password
+Description: Enter password for SystemUser and DataCurator
+
+Template: gemstone-server/password-confirm
+Type: password
+Description: Re-enter password for SystemUser and DataCurator
+
