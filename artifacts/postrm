@@ -1,6 +1,6 @@
 #!/bin/sh -e
 # https://www.debian.org/doc/debian-policy/ch-maintainerscripts.html
->&2 echo "\"$0\" \"$1\" \"$2\" \"$3\""
+# >&2 echo "\"$0\" \"$1\" \"$2\" \"$3\""
 
 . /usr/share/debconf/confmodule
 
@@ -21,16 +21,12 @@ if [ "$keep" = "0" ]; then
   # remove GEMSTONE environment variables
   x=`grep GEMSTONE /etc/environment` || true
   if [ ! -z "$x" ]; then
-    sed -i '\:GEMSTONE=/usr/share/gemstone:d' /etc/environment
+    sed -i '\:GEMSTONE=/usr/lib/gemstone/VERSION:d' /etc/environment
     sed -i '\:GEMSTONE_GLOBAL_DIR=/var/lib/gemstone:d' /etc/environment
   fi
   if [ "$1" = "purge" ]; then
     rm -rf /var/log/gemstone /var/lib/gemstone /run/gemstone
-    >&2 echo "postrm:29"
     deluser gemstone || true
-    >&2 echo "postrm:31"
-    delgroup gemstone || true
-    >&2 echo "postrm:33"
   fi
 fi
 

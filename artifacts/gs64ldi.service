@@ -4,7 +4,7 @@ Documentation=https://gemtalksystems.com/products/gs64/
 After=systemd-user-sessions.service
 
 [Service]
-Environment=GEMSTONE=/usr/share/gemstone GEMSTONE_GLOBAL_DIR=/var/lib/gemstone
+Environment=GEMSTONE=/usr/lib/gemstone/VERSION GEMSTONE_GLOBAL_DIR=/var/lib/gemstone
 ExecStart=netldid -g -a gemstone -n -N -D /var/log/gemstone -l /var/log/gemstone/gs64ldi.log gs64ldi
 ExecStop=stopnetldi gs64ldi
 User=gemstone

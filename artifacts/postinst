@@ -1,17 +1,17 @@
 #!/bin/sh -e
 # https://www.debian.org/doc/debian-policy/ch-maintainerscripts.html
->&2 echo "\"$0\" \"$1\" \"$2\" \"$3\""
-export DEBCONF_DEBUG=developer
+# output to stderr to avoid sending output to debconf
+# >&2 echo "\"$0\" \"$1\" \"$2\" \"$3\""
+# export DEBCONF_DEBUG=developer
 
 . /usr/share/debconf/confmodule
 
-db_get gemstone-server/password-initial || x=$? || true
+db_get gemstone-server/password-initial
 password1=$RET
->&2 echo "password1 is \"$password1\""
->&2 echo "exit code is \"$x\""
 db_get gemstone-server/password-confirm
 password2=$RET
->&2 echo "password2 is \"$password2\""
+# >&2 echo "password1 is \"$password1\""
+# >&2 echo "password2 is \"$password2\""
 
 # add GemStone NetLDI to services to allow name lookup to port
 # but see https://www.debian.org/doc/debian-policy/ch-customized-programs.html#daemons
@@ -23,7 +23,7 @@ fi
 # add GEMSTONE environment variable for all users
 x=`grep GEMSTONE /etc/environment` || true
 if [ -z "$x" ]; then
-  echo "GEMSTONE=/usr/share/gemstone" >> /etc/environment
+  echo "GEMSTONE=/usr/lib/gemstone/VERSION" >> /etc/environment
   echo "GEMSTONE_GLOBAL_DIR=/var/lib/gemstone" >> /etc/environment
 fi
 
@@ -37,11 +37,13 @@ chown -R $USERNAME:$USERNAME \
   /var/log/gemstone
 
 # install the initial database
-if [ ! -f "/var/lib/gemstone/gs64stone.dbf" ]; then
+if [ -f "/var/lib/gemstone/data/gs64stone.dbf" ]; then
+  >&2 echo "Preserving existing database"
+else
   cp /usr/lib/gemstone/VERSION/bin/extent0.dbf /var/lib/gemstone/data/gs64stone.dbf
   chown $USERNAME:$USERNAME /var/lib/gemstone/data/gs64stone.dbf
   chmod 666 /var/lib/gemstone/data/gs64stone.dbf
-  echo "New database installed"
+  >&2 echo "New database installed"
 fi
 
 # give gemstone ownership of product folders and links
@@ -50,7 +52,8 @@ chown -hR gemstone:gemstone /usr/lib/gemstone/VERSION
 # set up alternatives - https://manpages.ubuntu.com/manpages/jammy/en/man1/update-alternatives.1.html
 # (shortcut for long name!)
 verify_backup=verify_backup_with_openssl
-update-alternatives --install /usr/share/gemstone gemstone /usr/lib/gemstone/VERSION PRIORITY         \
+update-alternatives --install \
+          /usr/share/gemstone       gemstone          /usr/lib/gemstone/VERSION PRIORITY              \
   --slave /usr/bin/copydbf          copydbf           /usr/lib/gemstone/VERSION/bin/copydbf           \
   --slave /usr/bin/gslist           gslist            /usr/lib/gemstone/VERSION/bin/gslist            \
   --slave /usr/bin/netldid          netldid           /usr/lib/gemstone/VERSION/sys/netldid           \
@@ -87,7 +90,7 @@ systemctl enable gs64stone
 systemctl start gs64ldi
 systemctl start gs64stone
 
-echo "'export GEMSTONE=/usr/share/gemstone' added to /etc/environment script."
-echo "'export GEMSTONE_GLOBAL_DIR=/var/lib/gemstone' added to /etc/environment script."
-echo "Execute them manually or log out and log in again to use GemStone"
+>&2 echo "'export GEMSTONE=/usr/lib/gemstone/VERSION' added to /etc/environment script."
+>&2 echo "'export GEMSTONE_GLOBAL_DIR=/var/lib/gemstone' added to /etc/environment script."
+>&2 echo "Execute them manually or log out and log in again to use GemStone"
 exit 0 # if we got here then all went well!

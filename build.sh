@@ -94,6 +94,8 @@ sed -i "s/VERSION/$VERSION/g"           $BUILD_DIR/DEBIAN/control
 sed -i "s/VERSION/$VERSION/g"           $BUILD_DIR/DEBIAN/postinst
 sed -i "s/VERSION/$VERSION/g"           $BUILD_DIR/DEBIAN/postrm
 sed -i "s/VERSION/$VERSION/g"           $BUILD_DIR/DEBIAN/prerm
+sed -i "s/VERSION/$VERSION/g"           $BUILD_DIR/etc/systemd/system/gs64ldi.service
+sed -i "s/VERSION/$VERSION/g"           $BUILD_DIR/etc/systemd/system/gs64stone.service
 
 # build the package
 date
