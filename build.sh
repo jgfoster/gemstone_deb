@@ -44,9 +44,10 @@ mkdir -p $BUILD_DIR \
   $BUILD_DIR/run/gemstone \
   $BUILD_DIR/usr/bin \
   $BUILD_DIR/usr/lib/gemstone/$VERSION \
-  $BUILD_DIR/var/lib/gemstone/data \
-  $BUILD_DIR/var/lib/gemstone/tranlogs \
   $BUILD_DIR/var/lib/gemstone/backups \
+  $BUILD_DIR/var/lib/gemstone/data \
+  $BUILD_DIR/var/lib/gemstone/statmon \
+  $BUILD_DIR/var/lib/gemstone/tranlogs \
   $BUILD_DIR/var/log/gemstone
 
 ln -s /run/gemstone $BUILD_DIR/var/lib/gemstone/locks
@@ -99,5 +100,5 @@ sed -i "s/VERSION/$VERSION/g"           $BUILD_DIR/etc/systemd/system/gs64stone.
 
 # build the package
 date
-time fakeroot dpkg-deb --build $BUILD_DIR   # 8+ minutes
+time fakeroot dpkg-deb --build $BUILD_DIR   # ~9 minutes
 date

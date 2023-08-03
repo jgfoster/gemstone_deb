@@ -1,5 +1,5 @@
 #!/bin/bash
-topaz -l << EOF
+topaz -l >> /var/log/gemstone/daily.log << EOF
 iferr 1 stk
 iferr 2 exit 1
 set user DataCurator
