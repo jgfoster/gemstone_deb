@@ -7,7 +7,7 @@ After=network-online.target
 [Service]
 Environment=GEMSTONE=/usr/lib/gemstone/VERSION GEMSTONE_GLOBAL_DIR=/var/lib/gemstone
 ExecStart=stoned -e /etc/gemstone/gs64stone.conf -l /var/log/gemstone/gs64stone.log -z /etc/gemstone/system.conf gs64stone
-ExecStop=PASSWORD=`cat /etc/gemstone/password`; stopstone -i gs64stone DataCurator $PASSWORD
+ExecStop=sh -c "/usr/lib/gemstone/bin/stopStone.sh"
 User=gemstone
 Group=gemstone
 TimeoutSec=60

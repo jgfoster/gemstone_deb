@@ -11,8 +11,8 @@
 . /usr/share/debconf/confmodule
 
 db_get gemstone-server/password
-echo "$RET" > /etc/gemstone/password
-chmod 400 /etc/gemstone/password
+echo "$RET" > /etc/gemstone/secret
+chmod 400 /etc/gemstone/secret
 
 # add GemStone NetLDI to services to allow name lookup to port
 # but see https://www.debian.org/doc/debian-policy/ch-customized-programs.html#daemons
@@ -38,8 +38,7 @@ chown -R $USERNAME:$USERNAME \
   /var/log/gemstone
 
 # install the initial database
-if [ -f "/var/lib/gemstone/data/gs64stone.dbf" ]; then
-else
+if [ ! -f "/var/lib/gemstone/data/gs64stone.dbf" ]; then
   cp /usr/lib/gemstone/VERSION/bin/extent0.dbf /var/lib/gemstone/data/gs64stone.dbf
   chown $USERNAME:$USERNAME /var/lib/gemstone/data/gs64stone.dbf
   chmod 666 /var/lib/gemstone/data/gs64stone.dbf
@@ -92,8 +91,5 @@ systemctl start gs64stone
 >&2 echo "'export GEMSTONE=/usr/lib/gemstone/VERSION' added to /etc/environment script."
 >&2 echo "'export GEMSTONE_GLOBAL_DIR=/var/lib/gemstone' added to /etc/environment script."
 >&2 echo "Execute them manually or log out and log in again to use GemStone"
-
-db-unregister gemstone-server/password
-db-unregister gemstone-server/password-confirm || true
 
 exit 0 # if we got here then all went well!

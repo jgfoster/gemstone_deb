@@ -1,6 +1,6 @@
 #!/bin/sh -e
 # https://www.debian.org/doc/debian-policy/ch-maintainerscripts.html
-# >&2 echo "\"$0\" \"$1\" \"$2\" \"$3\""
+>&2 echo "\"$0\" \"$1\" \"$2\" \"$3\""
 
 . /usr/share/debconf/confmodule
 
@@ -25,11 +25,11 @@ if [ "$keep" = "0" ]; then
     sed -i '\:GEMSTONE_GLOBAL_DIR=/var/lib/gemstone:d' /etc/environment
   fi
   if [ "$1" = "purge" ]; then
-    rm -rf /var/log/gemstone /var/lib/gemstone /run/gemstone
+    >&2 echo "complete purge operation"
+    rm -rf /etc/gemstone/secret /run/gemstone /var/lib/gemstone /var/log/gemstone
     deluser gemstone || true
     db_purge || true
   fi
 fi
-
 
 exit 0 # if we got here then all went well!

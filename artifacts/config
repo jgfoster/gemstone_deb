@@ -14,7 +14,7 @@ db_get gemstone-server/password-confirm
 password2=$RET
 if [ "$password1" != "$password2" ]; then
   db-unregister gemstone-server/password || true
-  db-unregister high gemstone-server/password-confirm || true
+  db-unregister gemstone-server/password-confirm || true
   >&2 echo "Passwords don't match!"
   exit 1
 fi

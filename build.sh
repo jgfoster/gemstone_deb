@@ -21,8 +21,8 @@ export PRODUCT="/tmp/gemstone-server-$VERSION"
 export NAME=GemStone64Bit${VERSION}-x86_64.Linux
 
 # get rid of any existing build directory
-chmod -R 777 /tmp/gemstone-server_* 2>/dev/null
-rm -rf /tmp/gemstone-server_* 2>/dev/null
+chmod -R 777 /tmp/gemstone-server_* 2>/dev/null || true
+rm -rf /tmp/gemstone-server_* 2>/dev/null || true
 
 # get the product tree (skip download and unzip if we have it already)
 if [ ! -f $PRODUCT.zip ]; then

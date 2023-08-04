@@ -1,4 +1,4 @@
-Template: gemstone-server/password-initial
+Template: gemstone-server/password
 Type: password
 Description: Enter password for SystemUser and DataCurator
 
