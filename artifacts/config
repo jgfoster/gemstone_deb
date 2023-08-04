@@ -1,6 +1,21 @@
 #!/bin/sh -e
+# data stored in /var/cache/debconf/
+# https://www.debian.org/releases/stretch/amd64/apb.html.en
+
 . /usr/share/debconf/confmodule
 
-db_input high gemstone-server/password-initial || true
+db_input high gemstone-server/password || true
 db_input high gemstone-server/password-confirm || true
 db_go || true
+
+db_get gemstone-server/password
+password1=$RET
+db_get gemstone-server/password-confirm
+password2=$RET
+if [ "$password1" != "$password2" ]; then
+  db-unregister gemstone-server/password || true
+  db-unregister high gemstone-server/password-confirm || true
+  >&2 echo "Passwords don't match!"
+  exit 1
+fi
+exit 0

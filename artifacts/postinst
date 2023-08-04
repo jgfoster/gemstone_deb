@@ -1,17 +1,18 @@
 #!/bin/sh -e
 # https://www.debian.org/doc/debian-policy/ch-maintainerscripts.html
+# http://www.fifi.org/doc/debconf-doc/tutorial.html
+# https://manpages.ubuntu.com/manpages/focal/en/man7/debconf-devel.7.html
+
 # output to stderr to avoid sending output to debconf
 # >&2 echo "\"$0\" \"$1\" \"$2\" \"$3\""
+
 # export DEBCONF_DEBUG=developer
 
 . /usr/share/debconf/confmodule
 
-db_get gemstone-server/password-initial
-password1=$RET
-db_get gemstone-server/password-confirm
-password2=$RET
-# >&2 echo "password1 is \"$password1\""
-# >&2 echo "password2 is \"$password2\""
+db_get gemstone-server/password
+echo "$RET" > /etc/gemstone/password
+chmod 400 /etc/gemstone/password
 
 # add GemStone NetLDI to services to allow name lookup to port
 # but see https://www.debian.org/doc/debian-policy/ch-customized-programs.html#daemons
@@ -38,12 +39,10 @@ chown -R $USERNAME:$USERNAME \
 
 # install the initial database
 if [ -f "/var/lib/gemstone/data/gs64stone.dbf" ]; then
-  >&2 echo "Preserving existing database"
 else
   cp /usr/lib/gemstone/VERSION/bin/extent0.dbf /var/lib/gemstone/data/gs64stone.dbf
   chown $USERNAME:$USERNAME /var/lib/gemstone/data/gs64stone.dbf
   chmod 666 /var/lib/gemstone/data/gs64stone.dbf
-  >&2 echo "New database installed"
 fi
 
 # give gemstone ownership of product folders and links
@@ -93,4 +92,8 @@ systemctl start gs64stone
 >&2 echo "'export GEMSTONE=/usr/lib/gemstone/VERSION' added to /etc/environment script."
 >&2 echo "'export GEMSTONE_GLOBAL_DIR=/var/lib/gemstone' added to /etc/environment script."
 >&2 echo "Execute them manually or log out and log in again to use GemStone"
+
+db-unregister gemstone-server/password
+db-unregister gemstone-server/password-confirm || true
+
 exit 0 # if we got here then all went well!
