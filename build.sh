@@ -43,9 +43,9 @@ mkdir -p $BUILD_DIR \
   $BUILD_DIR/etc/systemd/system \
   $BUILD_DIR/run/gemstone \
   $BUILD_DIR/usr/bin \
-  $BUILD_DIR/usr/lib/gemstone/bin \
   $BUILD_DIR/usr/lib/gemstone/$VERSION \
   $BUILD_DIR/var/lib/gemstone/backups \
+  $BUILD_DIR/var/lib/gemstone/bin \
   $BUILD_DIR/var/lib/gemstone/data \
   $BUILD_DIR/var/lib/gemstone/statmon \
   $BUILD_DIR/var/lib/gemstone/tranlogs \
@@ -88,9 +88,10 @@ cp artifacts/control                    $BUILD_DIR/DEBIAN
 cp artifacts/postinst                   $BUILD_DIR/DEBIAN
 cp artifacts/prerm                      $BUILD_DIR/DEBIAN
 cp artifacts/postrm                     $BUILD_DIR/DEBIAN
-cp artifacts/changePassword.sh          $BUILD_DIR/usr/lib/gemstone/bin
-cp artifacts/resetPassword.sh           $BUILD_DIR/usr/lib/gemstone/bin
-cp artifacts/setPassword.sh             $BUILD_DIR/usr/lib/gemstone/bin
+cp artifacts/changePassword.sh          $BUILD_DIR/var/lib/gemstone/bin
+cp artifacts/resetPassword.sh           $BUILD_DIR/var/lib/gemstone/bin
+cp artifacts/setPassword.sh             $BUILD_DIR/var/lib/gemstone/bin
+cp artifacts/stopStone.sh               $BUILD_DIR/var/lib/gemstone/bin
 
 sed -i "s/DATE/$DATE/g"                 $BUILD_DIR/DEBIAN/control
 sed -i "s/PRIORITY/$PRIORITY/g"         $BUILD_DIR/DEBIAN/postinst
