@@ -60,6 +60,7 @@ cp artifacts/cron.daily                   $BUILD_DIR/etc/cron.daily/gemstone
 # /etc/gemstone/ will contain config files
 cp artifacts/gs64stone.conf               $BUILD_DIR/etc/gemstone
 cp artifacts/gem.conf                     $BUILD_DIR/etc/gemstone
+cp artifacts/logrotate.conf               $BUILD_DIR/etc/gemstone
 cp $PRODUCT/data/system.conf              $BUILD_DIR/etc/gemstone
 cp $PRODUCT/sys/community.starter.key     $BUILD_DIR/etc/gemstone/gemstone.key
 

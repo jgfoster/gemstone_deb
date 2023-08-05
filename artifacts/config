@@ -13,9 +13,15 @@ password1=$RET
 db_get gemstone-server/password-confirm
 password2=$RET
 if [ "$password1" != "$password2" ]; then
-  db-unregister gemstone-server/password || true
-  db-unregister gemstone-server/password-confirm || true
-  >&2 echo "Passwords don't match!"
+  # db-unregister gemstone-server/password || true
+  # db-unregister gemstone-server/password-confirm || true
+  >&2 echo "Passwords must match!"
+  exit 1
+fi
+if [ "-$password1-" = "--" ]; then
+  # db-unregister gemstone-server/password || true
+  # db-unregister gemstone-server/password-confirm || true
+  >&2 echo "Passwords must not be empty!"
   exit 1
 fi
 exit 0

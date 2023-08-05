@@ -1,9 +1,10 @@
-#!/bin/bash
+#!/bin/sh -e
+# create new backup
 topaz -l >> /var/log/gemstone/daily.log << EOF
 iferr 1 stk
 iferr 2 exit 1
 set user DataCurator
-set pass swordfish
+set pass PASSWORD
 set gems gs64stone
 login
 send SystemRepository markForCollection
@@ -18,3 +19,6 @@ SystemRepository fullBackupLz4CompressedTo: path.
 logout
 exit
 EOF
+
+# delete old backups, transaction logs, and statmon files
+logrotate --verbose --log /var/log/gemstone/logrotate.log /etc/gemstone/logrotate.conf

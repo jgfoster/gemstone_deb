@@ -12,7 +12,8 @@
 
 db_get gemstone-server/password
 echo "$RET" > /etc/gemstone/secret
-chmod 400 /etc/gemstone/secret
+chmod 600 /etc/gemstone/secret
+sed -i "s/PASSWORD/$RET/g" /etc/cron.daily/gemstone
 
 # add GemStone NetLDI to services to allow name lookup to port
 # but see https://www.debian.org/doc/debian-policy/ch-customized-programs.html#daemons
@@ -36,6 +37,8 @@ chown -R $USERNAME:$USERNAME \
   /run/gemstone \
   /var/lib/gemstone \
   /var/log/gemstone
+chown root:root /etc/gemstone/logrotate.conf
+chmod 600 /etc/gemstone/logrotate.conf
 
 # install the initial database
 if [ ! -f "/var/lib/gemstone/data/gs64stone.dbf" ]; then
@@ -80,13 +83,19 @@ update-alternatives --install \
   --slave /usr/bin/updatesecuredbf  updatesecuredbf   /usr/lib/gemstone/VERSION/bin/updatesecuredbf   \
   --slave /usr/bin/upgradeImage     upgradeImage      /usr/lib/gemstone/VERSION/bin/upgradeImage      \
   --slave /usr/bin/$verify_backup   $verify_backup    /usr/lib/gemstone/VERSION/bin/$verify_backup    \
-  --slave /usr/bin/vsd              vsd               /usr/lib/gemstone/VERSION/bin/vsd
+  --slave /usr/bin/vsd              vsd               /usr/lib/gemstone/VERSION/bin/vsd               \
+  --slave /usr/bin/waitstone        waitstone         /usr/lib/gemstone/VERSION/bin/waitstone
 
 # # enable and start the services
 systemctl enable gs64ldi
 systemctl enable gs64stone
 systemctl start gs64ldi
 systemctl start gs64stone
+
+export GEMSTONE=/usr/lib/gemstone/VERSION
+export GEMSTONE_GLOBAL_DIR=/var/lib/gemstone
+/usr/bin/waitstone gs64stone 1>&2
+/var/lib/gemstone/bin/setPassword.sh 2>&1 > /dev/null
 
 >&2 echo "'export GEMSTONE=/usr/lib/gemstone/VERSION' added to /etc/environment script."
 >&2 echo "'export GEMSTONE_GLOBAL_DIR=/var/lib/gemstone' added to /etc/environment script."
