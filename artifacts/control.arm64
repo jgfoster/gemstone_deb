@@ -1,0 +1,13 @@
+Maintainer: James Foster <james.foster@gemtalksystems.com>
+Section: database
+Priority: optional
+Package: gemstone-server
+Architecture: arm64
+Version: VERSION
+Description: GemStone/S 64 Bit Object Database and Application Server
+Date: DATE
+Urgency: medium (normal bugfixes)
+Installed-Size: SIZE
+Homepage: https://gemtalksystems.com/products/gs64/
+Package-Type: deb
+Pre-Depends: debconf (>= 0.2.17)

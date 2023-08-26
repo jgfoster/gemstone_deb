@@ -5,10 +5,10 @@
 . /usr/share/debconf/confmodule
 
 # stop GemStone services
-systemctl stop gs64ldi
-systemctl stop gs64stone
+systemctl stop gs64ldi || true
+systemctl stop gs64stone || true
 
 # remove alternatives - https://manpages.ubuntu.com/manpages/jammy/en/man1/update-alternatives.1.html
-update-alternatives --remove gemstone /usr/lib/gemstone/VERSION
+update-alternatives --remove gemstone /usr/lib/gemstone/VERSION || true
 
 exit 0 # if we got here then all went well!

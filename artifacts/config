@@ -4,23 +4,30 @@
 
 . /usr/share/debconf/confmodule
 
-db_input high gemstone-server/password || true
-db_input high gemstone-server/password-confirm || true
+if [ ! -f /etc/gemstone/secret ]; then
+  db_input critical gemstone-server/password || true
+  db_input critical gemstone-server/password-confirm || true
+fi
+db_input high gemstone-server/unicode-comparison || true
 db_go || true
+
+if [ -f /etc/gemstone/secret ]; then
+  exit 0
+fi
 
 db_get gemstone-server/password
 password1=$RET
 db_get gemstone-server/password-confirm
 password2=$RET
 if [ "$password1" != "$password2" ]; then
-  # db-unregister gemstone-server/password || true
-  # db-unregister gemstone-server/password-confirm || true
+  db_unregister gemstone-server/password || true
+  db_unregister gemstone-server/password-confirm || true
   >&2 echo "Passwords must match!"
   exit 1
 fi
 if [ "-$password1-" = "--" ]; then
-  # db-unregister gemstone-server/password || true
-  # db-unregister gemstone-server/password-confirm || true
+  db_unregister gemstone-server/password || true
+  db_unregister gemstone-server/password-confirm || true
   >&2 echo "Passwords must not be empty!"
   exit 1
 fi

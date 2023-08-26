@@ -1,0 +1,17 @@
+#!/bin/sh -e
+# preinst install
+# preinst install old-version new-version
+# preinst upgrade old-version new-version
+
+# output to stderr to avoid sending output to debconf
+# >&2 echo "\"$0\" \"$1\" \"$2\" \"$3\""
+
+if [ "$2" = "" ]; then
+  exit 0;
+fi
+
+# we already have an old version installed
+systemctl is-active --quiet gs64stone || systemctl start gs64stone
+/var/lib/gemstone/bin/resetPassword.sh
+systemctl stop gs64stone
+cp /var/lib/gemstone/data/gs64stone.dbf /tmp/gs64stone.dbf

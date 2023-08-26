@@ -1,4 +1,8 @@
 #!/bin/sh -e
+# postinst configure most-recently-configured-version
+# postinst abort-upgrade new-version
+# postinst abort-remove
+
 # https://www.debian.org/doc/debian-policy/ch-maintainerscripts.html
 # http://www.fifi.org/doc/debconf-doc/tutorial.html
 # https://manpages.ubuntu.com/manpages/focal/en/man7/debconf-devel.7.html
@@ -8,97 +12,113 @@
 
 # export DEBCONF_DEBUG=developer
 
-. /usr/share/debconf/confmodule
+if [ "$1" = "configure" ]; then
+  # get configurations
+  . /usr/share/debconf/confmodule
+  # save configurations
+  if [ ! -f /etc/gemstone/secret ]; then
+    db_get gemstone-server/password
+    echo "$RET" > /etc/gemstone/secret
+    chmod 600 /etc/gemstone/secret
+    sed -i "s/PASSWORD/$RET/g" /etc/cron.daily/gemstone
+  fi
+  db_get gemstone-server/unicode-comparison
+  UNICODE="$RET"
 
-db_get gemstone-server/password
-echo "$RET" > /etc/gemstone/secret
-chmod 600 /etc/gemstone/secret
-sed -i "s/PASSWORD/$RET/g" /etc/cron.daily/gemstone
+  # add GemStone NetLDI to services to allow name lookup to port
+  # but see https://www.debian.org/doc/debian-policy/ch-customized-programs.html#daemons
+  x=`grep gs64ldi /etc/services` || true
+  if [ -z "$x" ]; then
+    echo "gs64ldi   50377/tcp   # GemStone/S 64 Bit" >> /etc/services
+  fi
 
-# add GemStone NetLDI to services to allow name lookup to port
-# but see https://www.debian.org/doc/debian-policy/ch-customized-programs.html#daemons
-x=`grep gs64ldi /etc/services` || true
-if [ -z "$x" ]; then
-  echo "gs64ldi   50377/tcp   # GemStone/S 64 Bit" >> /etc/services
+  # add GEMSTONE environment variable for all users
+  x=`grep GEMSTONE /etc/environment` || true
+  if [ -z "$x" ]; then
+    echo "GEMSTONE=/usr/lib/gemstone/VERSION" >> /etc/environment
+    echo "GEMSTONE_GLOBAL_DIR=/var/lib/gemstone" >> /etc/environment
+  fi
+
+  USERNAME='gemstone'
+  x = `grep '$USERNAME' /etc/passwd` || true
+  if [ -z "$x" ]; then
+    # create `gemstone` user & group
+    adduser --group --disabled-login --quiet --system $USERNAME
+  fi
+  chown -R $USERNAME:$USERNAME \
+    /etc/gemstone \
+    /run/gemstone \
+    /var/lib/gemstone \
+    /var/log/gemstone
+
+  # give gemstone ownership of product folders and links
+  chown -hR gemstone:gemstone /usr/lib/gemstone/VERSION
+
+  # set up alternatives - https://manpages.ubuntu.com/manpages/jammy/en/man1/update-alternatives.1.html
+  # (shortcut for long name!)
+  verify_backup=verify_backup_with_openssl
+  update-alternatives --install \
+            /usr/share/gemstone       gemstone          /usr/lib/gemstone/VERSION PRIORITY              \
+    --slave /usr/bin/copydbf          copydbf           /usr/lib/gemstone/VERSION/bin/copydbf           \
+    --slave /usr/bin/gslist           gslist            /usr/lib/gemstone/VERSION/bin/gslist            \
+    --slave /usr/bin/netldid          netldid           /usr/lib/gemstone/VERSION/sys/netldid           \
+    --slave /usr/bin/netldidebug      netldidebug       /usr/lib/gemstone/VERSION/bin/netldidebug       \
+    --slave /usr/bin/pageaudit        pageaudit         /usr/lib/gemstone/VERSION/bin/pageaudit         \
+    --slave /usr/bin/printlogs        printlogs         /usr/lib/gemstone/VERSION/bin/printlogs         \
+    --slave /usr/bin/pstack           pstack            /usr/lib/gemstone/VERSION/bin/pstack            \
+    --slave /usr/bin/removedbf        removedbf         /usr/lib/gemstone/VERSION/bin/removedbf         \
+    --slave /usr/bin/searchlogs       searchlogs        /usr/lib/gemstone/VERSION/bin/searchlogs        \
+    --slave /usr/bin/startcachewarmer startcachewarmer  /usr/lib/gemstone/VERSION/bin/startcachewarmer  \
+    --slave /usr/bin/starthostagent   starthostagent    /usr/lib/gemstone/VERSION/bin/starthostagent    \
+    --slave /usr/bin/startlogreceiver startlogreceiver  /usr/lib/gemstone/VERSION/bin/startlogreceiver  \
+    --slave /usr/bin/startlogsender   startlogsender    /usr/lib/gemstone/VERSION/bin/startlogsender    \
+    --slave /usr/bin/startnetldi      startnetldi       /usr/lib/gemstone/VERSION/bin/startnetldi       \
+    --slave /usr/bin/startstone       startstone        /usr/lib/gemstone/VERSION/bin/startstone        \
+    --slave /usr/bin/statmonitor      statmonitor       /usr/lib/gemstone/VERSION/bin/statmonitor       \
+    --slave /usr/bin/stoned           stoned            /usr/lib/gemstone/VERSION/sys/stoned            \
+    --slave /usr/bin/stophostagent    stophostagent     /usr/lib/gemstone/VERSION/bin/stophostagent     \
+    --slave /usr/bin/stoplogreceiver  stoplogreceiver   /usr/lib/gemstone/VERSION/bin/stoplogreceiver   \
+    --slave /usr/bin/stoplogsender    stoplogsender     /usr/lib/gemstone/VERSION/bin/stoplogsender     \
+    --slave /usr/bin/stopnetldi       stopnetldi        /usr/lib/gemstone/VERSION/bin/stopnetldi        \
+    --slave /usr/bin/stopstone        stopstone         /usr/lib/gemstone/VERSION/bin/stopstone         \
+    --slave /usr/bin/superdoit_solo   superdoit_solo    /usr/lib/gemstone/VERSION/bin/superdoit_solo    \
+    --slave /usr/bin/superdoit_stone  superdoit_stone   /usr/lib/gemstone/VERSION/bin/superdoit_stone   \
+    --slave /usr/bin/topaz            topaz             /usr/lib/gemstone/VERSION/bin/topaz             \
+    --slave /usr/bin/updatesecuredbf  updatesecuredbf   /usr/lib/gemstone/VERSION/bin/updatesecuredbf   \
+    --slave /usr/bin/upgradeImage     upgradeImage      /usr/lib/gemstone/VERSION/bin/upgradeImage      \
+    --slave /usr/bin/$verify_backup   $verify_backup    /usr/lib/gemstone/VERSION/bin/$verify_backup    \
+    --slave /usr/bin/vsd              vsd               /usr/lib/gemstone/VERSION/bin/vsd               \
+    --slave /usr/bin/waitstone        waitstone         /usr/lib/gemstone/VERSION/bin/waitstone
+
+  systemctl enable --now gs64ldi
+
+  export GEMSTONE=/usr/lib/gemstone/VERSION
+  export GEMSTONE_GLOBAL_DIR=/var/lib/gemstone
+  if [ ! -f "/var/lib/gemstone/data/gs64stone.dbf" ]; then
+    # install and start the initial database
+    cp /usr/lib/gemstone/VERSION/bin/extent0.dbf /var/lib/gemstone/data/gs64stone.dbf
+    chown $USERNAME:$USERNAME /var/lib/gemstone/data/gs64stone.dbf
+    chmod 666 /var/lib/gemstone/data/gs64stone.dbf
+    systemctl enable --now gs64stone
+    /usr/bin/waitstone gs64stone 1>&2
+    # set string comparison mode
+    if [ "$UNICODE" = "true" ]; then
+      /var/lib/gemstone/bin/setUnicodeComparison.sh
+    else
+      /var/lib/gemstone/bin/setAsciiComparison.sh
+    fi
+  else
+    # upgrade an existing database
+    systemctl enable --now gs64stone
+    /usr/bin/waitstone gs64stone 1>&2
+    mkdir -p /tmp/gemstone/upgradeLogDir
+    export upgradeLogDir=/tmp/gemstone/upgradeLogDir
+    /var/lib/gemstone/bin/upgrade.sh
+  fi
+  /var/lib/gemstone/bin/setPassword.sh 2>&1 > /dev/null
+
+  >&2 echo "'export GEMSTONE=/usr/lib/gemstone/VERSION' added to /etc/environment script."
+  >&2 echo "'export GEMSTONE_GLOBAL_DIR=/var/lib/gemstone' added to /etc/environment script."
+  >&2 echo "Execute them manually or log out and log in again to use GemStone"
 fi
-
-# add GEMSTONE environment variable for all users
-x=`grep GEMSTONE /etc/environment` || true
-if [ -z "$x" ]; then
-  echo "GEMSTONE=/usr/lib/gemstone/VERSION" >> /etc/environment
-  echo "GEMSTONE_GLOBAL_DIR=/var/lib/gemstone" >> /etc/environment
-fi
-
-USERNAME='gemstone'
-# create `gemstone` user & group
-adduser --group --disabled-login --quiet --system $USERNAME
-chown -R $USERNAME:$USERNAME \
-  /etc/gemstone \
-  /run/gemstone \
-  /var/lib/gemstone \
-  /var/log/gemstone
-chown root:root /etc/gemstone/logrotate.conf
-chmod 600 /etc/gemstone/logrotate.conf
-
-# install the initial database
-if [ ! -f "/var/lib/gemstone/data/gs64stone.dbf" ]; then
-  cp /usr/lib/gemstone/VERSION/bin/extent0.dbf /var/lib/gemstone/data/gs64stone.dbf
-  chown $USERNAME:$USERNAME /var/lib/gemstone/data/gs64stone.dbf
-  chmod 666 /var/lib/gemstone/data/gs64stone.dbf
-fi
-
-# give gemstone ownership of product folders and links
-chown -hR gemstone:gemstone /usr/lib/gemstone/VERSION
-
-# set up alternatives - https://manpages.ubuntu.com/manpages/jammy/en/man1/update-alternatives.1.html
-# (shortcut for long name!)
-verify_backup=verify_backup_with_openssl
-update-alternatives --install \
-          /usr/share/gemstone       gemstone          /usr/lib/gemstone/VERSION PRIORITY              \
-  --slave /usr/bin/copydbf          copydbf           /usr/lib/gemstone/VERSION/bin/copydbf           \
-  --slave /usr/bin/gslist           gslist            /usr/lib/gemstone/VERSION/bin/gslist            \
-  --slave /usr/bin/netldid          netldid           /usr/lib/gemstone/VERSION/sys/netldid           \
-  --slave /usr/bin/netldidebug      netldidebug       /usr/lib/gemstone/VERSION/bin/netldidebug       \
-  --slave /usr/bin/pageaudit        pageaudit         /usr/lib/gemstone/VERSION/bin/pageaudit         \
-  --slave /usr/bin/printlogs        printlogs         /usr/lib/gemstone/VERSION/bin/printlogs         \
-  --slave /usr/bin/pstack           pstack            /usr/lib/gemstone/VERSION/bin/pstack            \
-  --slave /usr/bin/removedbf        removedbf         /usr/lib/gemstone/VERSION/bin/removedbf         \
-  --slave /usr/bin/searchlogs       searchlogs        /usr/lib/gemstone/VERSION/bin/searchlogs        \
-  --slave /usr/bin/startcachewarmer startcachewarmer  /usr/lib/gemstone/VERSION/bin/startcachewarmer  \
-  --slave /usr/bin/starthostagent   starthostagent    /usr/lib/gemstone/VERSION/bin/starthostagent    \
-  --slave /usr/bin/startlogreceiver startlogreceiver  /usr/lib/gemstone/VERSION/bin/startlogreceiver  \
-  --slave /usr/bin/startlogsender   startlogsender    /usr/lib/gemstone/VERSION/bin/startlogsender    \
-  --slave /usr/bin/startnetldi      startnetldi       /usr/lib/gemstone/VERSION/bin/startnetldi       \
-  --slave /usr/bin/startstone       startstone        /usr/lib/gemstone/VERSION/bin/startstone        \
-  --slave /usr/bin/statmonitor      statmonitor       /usr/lib/gemstone/VERSION/bin/statmonitor       \
-  --slave /usr/bin/stoned           stoned            /usr/lib/gemstone/VERSION/sys/stoned            \
-  --slave /usr/bin/stophostagent    stophostagent     /usr/lib/gemstone/VERSION/bin/stophostagent     \
-  --slave /usr/bin/stoplogreceiver  stoplogreceiver   /usr/lib/gemstone/VERSION/bin/stoplogreceiver   \
-  --slave /usr/bin/stoplogsender    stoplogsender     /usr/lib/gemstone/VERSION/bin/stoplogsender     \
-  --slave /usr/bin/stopnetldi       stopnetldi        /usr/lib/gemstone/VERSION/bin/stopnetldi        \
-  --slave /usr/bin/stopstone        stopstone         /usr/lib/gemstone/VERSION/bin/stopstone         \
-  --slave /usr/bin/superdoit_solo   superdoit_solo    /usr/lib/gemstone/VERSION/bin/superdoit_solo    \
-  --slave /usr/bin/superdoit_stone  superdoit_stone   /usr/lib/gemstone/VERSION/bin/superdoit_stone   \
-  --slave /usr/bin/topaz            topaz             /usr/lib/gemstone/VERSION/bin/topaz             \
-  --slave /usr/bin/updatesecuredbf  updatesecuredbf   /usr/lib/gemstone/VERSION/bin/updatesecuredbf   \
-  --slave /usr/bin/upgradeImage     upgradeImage      /usr/lib/gemstone/VERSION/bin/upgradeImage      \
-  --slave /usr/bin/$verify_backup   $verify_backup    /usr/lib/gemstone/VERSION/bin/$verify_backup    \
-  --slave /usr/bin/vsd              vsd               /usr/lib/gemstone/VERSION/bin/vsd               \
-  --slave /usr/bin/waitstone        waitstone         /usr/lib/gemstone/VERSION/bin/waitstone
-
-# # enable and start the services
-systemctl enable gs64ldi
-systemctl enable gs64stone
-systemctl start gs64ldi
-systemctl start gs64stone
-
-export GEMSTONE=/usr/lib/gemstone/VERSION
-export GEMSTONE_GLOBAL_DIR=/var/lib/gemstone
-/usr/bin/waitstone gs64stone 1>&2
-/var/lib/gemstone/bin/setPassword.sh 2>&1 > /dev/null
-
->&2 echo "'export GEMSTONE=/usr/lib/gemstone/VERSION' added to /etc/environment script."
->&2 echo "'export GEMSTONE_GLOBAL_DIR=/var/lib/gemstone' added to /etc/environment script."
->&2 echo "Execute them manually or log out and log in again to use GemStone"
-
 exit 0 # if we got here then all went well!

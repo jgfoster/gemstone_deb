@@ -21,4 +21,6 @@ exit
 EOF
 
 # delete old backups, transaction logs, and statmon files
-logrotate --verbose --log /var/log/gemstone/logrotate.log /etc/gemstone/logrotate.conf
+find /var/lib/gemstone/tranlogs/*.log -mtime +3 -exec rm -f {} \;
+find /var/lib/gemstone/backups/*.log -mtime +5 -exec rm -f {} \;
+find /var/lib/gemstone/statmon/*.log -mtime +14 -exec rm -f {} \;

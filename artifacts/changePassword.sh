@@ -4,6 +4,7 @@ login
 run
 (AllUsers userWithId: 'DataCurator') password: 'NEW_PASSWORD'.
 (AllUsers userWithId: 'SystemUser') password: 'NEW_PASSWORD'.
+(AllUsers userWithId: 'GcUser') password: 'NEW_PASSWORD'.
 System commit.
 %
 logout

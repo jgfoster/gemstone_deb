@@ -27,6 +27,7 @@ if [ "$keep" = "0" ]; then
   if [ "$1" = "purge" ]; then
     rm -rf /etc/gemstone/secret /run/gemstone /var/lib/gemstone /var/log/gemstone
     deluser gemstone || true
+    rm -rf /home/gemstone
     db_purge || true
   fi
 fi

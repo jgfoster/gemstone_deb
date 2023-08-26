@@ -1,0 +1,17 @@
+---
+# Inspired by https://github.com/mrjk/ansible-skel/tree/master
+# Confirm that we can reach the target and get OS information
+# ansible-playbook 1_target_test.yml
+
+- name: Test connectivity
+  hosts: all
+  tasks:
+    - name: Test Ansible ping
+      ping:
+    - name: Run a command to get target release
+      shell: cat /etc/*ease || sw_vers
+      changed_when: false
+      register: result
+    - name: Print result
+      debug:
+        msg: "{{ result.stdout_lines }}"

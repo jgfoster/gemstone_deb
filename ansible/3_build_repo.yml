@@ -1,0 +1,34 @@
+---
+# Playbook to build GemStone repository
+# https://www.digitalocean.com/community/tutorials/how-to-use-reprepro-for-a-secure-package-repository-on-ubuntu-14-04
+# ansible-playbook 3_build_repo.yml -v
+#
+
+- name: Build GemStone repository
+  hosts: ubuntu
+  tasks:
+    - name: Install reprepro package
+      become: true
+      ansible.builtin.apt:
+        allow_change_held_packages: true
+        install_recommends: true
+        name: reprepro
+        state: latest
+        update_cache: true
+        cache_valid_time: 300
+    - name: Create ppa and conf directories
+      ansible.builtin.file:
+        path: /tmp/ppa/conf
+        state: directory
+        mode: '0755'
+    - name: Copy distributions file
+      ansible.builtin.copy:
+        src: ./distributions
+        dest: /tmp/ppa/conf/distributions
+    - name: Get names of packages
+      ansible.builtin.shell: ls /tmp/gemstone-server*.deb
+      register: file_names
+      changed_when: false
+    - name: Add packages to repository
+      ansible.builtin.shell: reprepro -b /tmp/ppa includedeb stable {{ item }}
+      loop: "{{ file_names.stdout_lines }}"

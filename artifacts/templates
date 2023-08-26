@@ -1,8 +1,12 @@
 Template: gemstone-server/password
 Type: password
-Description: Enter password for SystemUser and DataCurator
+Description: Enter password for system accounts:
 
 Template: gemstone-server/password-confirm
 Type: password
-Description: Re-enter password for SystemUser and DataCurator
+Description: Re-enter password for system accounts:
 
+Template: gemstone-server/unicode-comparison
+Type: boolean
+Default: true
+Description: Enable Unicode comparison mode?

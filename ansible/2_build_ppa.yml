@@ -1,0 +1,67 @@
+---
+# Playbook to build GemStone package
+# ansible-playbook 2_build_ppa.yml -v
+#
+
+- name: Build GemStone packages for amd64 and arm64
+  hosts: ubuntu
+  vars:
+    version: "3.6.6"
+    priority: "30606"
+    package_num: "1"
+  tasks:
+    - name: Set timezone to America/Los_Angeles
+      become: true
+      community.general.timezone:
+        name: America/Los_Angeles
+    - name: Install dpkg-dev package
+      become: true
+      ansible.builtin.apt:
+        allow_change_held_packages: true
+        install_recommends: true
+        name: dpkg-dev
+        state: latest
+        update_cache: true
+    - name: Install fakeroot package
+      become: true
+      ansible.builtin.apt:
+        allow_change_held_packages: true
+        install_recommends: true
+        name: fakeroot
+        state: latest
+    - name: Install unzip package
+      become: true
+      ansible.builtin.apt:
+        allow_change_held_packages: true
+        install_recommends: true
+        name: unzip
+        state: latest
+    - name: Git checkout of Debian package building repository
+      ansible.builtin.git:
+        repo: https://github.com/jgfoster/gemstone_deb.git
+        accept_newhostkey: true
+        depth: 1
+        force: true
+        single_branch: true
+        dest: /tmp/gemstone_deb
+        update: true
+        version: ansible
+      register: git_checkout
+    - name: Build amd64 package
+      ansible.builtin.shell: |
+        cd /tmp/gemstone_deb
+        export VERSION="{{ version }}"
+        export PRIORITY="{{ priority }}"
+        export PACKAGE_NUM="{{ package_num }}"
+        export ARCHITECTURE="amd64"
+        ./build.sh
+      when: git_checkout is success and git_checkout is changed
+    - name: Build arm64 package
+      ansible.builtin.shell: |
+        cd /tmp/gemstone_deb
+        export VERSION="{{ version }}"
+        export PRIORITY="{{ priority }}"
+        export PACKAGE_NUM="{{ package_num }}"
+        export ARCHITECTURE="arm64"
+        ./build.sh
+      when: git_checkout is success and git_checkout is changed
