@@ -111,8 +111,8 @@ if [ "$1" = "configure" ]; then
     # upgrade an existing database
     systemctl enable --now gs64stone
     /usr/bin/waitstone gs64stone 1>&2
-    mkdir -p /tmp/gemstone/upgradeLogDir
-    export upgradeLogDir=/tmp/gemstone/upgradeLogDir
+    mkdir -p /pitcairn1/users/jfoster/gemstone/upgradeLogDir
+    export upgradeLogDir=/pitcairn1/users/jfoster/gemstone/upgradeLogDir
     /var/lib/gemstone/bin/upgrade.sh
   fi
   /var/lib/gemstone/bin/setPassword.sh 2>&1 > /dev/null

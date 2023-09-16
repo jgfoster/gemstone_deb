@@ -4,16 +4,12 @@
 #
 
 - name: Build GemStone packages for amd64 and arm64
-  hosts: ubuntu
+  hosts: pitcairn
   vars:
-    version: "3.6.6"
-    priority: "30606"
+    version: "3.6.5"
+    priority: "30605"
     package_num: "1"
   tasks:
-    - name: Set timezone to America/Los_Angeles
-      become: true
-      community.general.timezone:
-        name: America/Los_Angeles
     - name: Install dpkg-dev package
       become: true
       ansible.builtin.apt:
@@ -43,13 +39,13 @@
         depth: 1
         force: true
         single_branch: true
-        dest: /tmp/gemstone_deb
+        dest: /pitcairn1/users/jfoster/gemstone_deb
         update: true
-        version: ansible
+        version: main
       register: git_checkout
     - name: Build amd64 package
       ansible.builtin.shell: |
-        cd /tmp/gemstone_deb
+        cd /pitcairn1/users/jfoster/gemstone_deb
         export VERSION="{{ version }}"
         export PRIORITY="{{ priority }}"
         export PACKAGE_NUM="{{ package_num }}"
@@ -58,7 +54,7 @@
       when: git_checkout is success and git_checkout is changed
     - name: Build arm64 package
       ansible.builtin.shell: |
-        cd /tmp/gemstone_deb
+        cd /pitcairn1/users/jfoster/gemstone_deb
         export VERSION="{{ version }}"
         export PRIORITY="{{ priority }}"
         export PACKAGE_NUM="{{ package_num }}"

@@ -5,7 +5,7 @@
 #
 
 - name: Build GemStone repository
-  hosts: ubuntu
+  hosts: pitcairn
   tasks:
     - name: Install reprepro package
       become: true
@@ -18,17 +18,17 @@
         cache_valid_time: 300
     - name: Create ppa and conf directories
       ansible.builtin.file:
-        path: /tmp/ppa/conf
+        path: /pitcairn1/users/jfoster/ppa/conf
         state: directory
         mode: '0755'
     - name: Copy distributions file
       ansible.builtin.copy:
         src: ./distributions
-        dest: /tmp/ppa/conf/distributions
+        dest: /pitcairn1/users/jfoster/ppa/conf/distributions
     - name: Get names of packages
-      ansible.builtin.shell: ls /tmp/gemstone-server*.deb
+      ansible.builtin.shell: ls /pitcairn1/users/jfoster/gemstone-server*.deb
       register: file_names
       changed_when: false
     - name: Add packages to repository
-      ansible.builtin.shell: reprepro -b /tmp/ppa includedeb stable {{ item }}
+      ansible.builtin.shell: reprepro -b /pitcairn1/users/jfoster/ppa includedeb stable {{ item }}
       loop: "{{ file_names.stdout_lines }}"

@@ -14,4 +14,4 @@ fi
 systemctl is-active --quiet gs64stone || systemctl start gs64stone
 /var/lib/gemstone/bin/resetPassword.sh
 systemctl stop gs64stone
-cp /var/lib/gemstone/data/gs64stone.dbf /tmp/gs64stone.dbf
+cp /var/lib/gemstone/data/gs64stone.dbf /pitcairn1/users/jfoster/gs64stone.dbf

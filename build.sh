@@ -7,7 +7,7 @@
 
 # dpkg --info ${PACKAGE_NAME}.deb
 # dpkg --contents ${PACKAGE_NAME}.deb
-# sudo dpkg --install /tmp/gemstone-server_*.deb
+# sudo dpkg --install /pitcairn1/users/jfoster/gemstone-server_*.deb
 # sudo dpkg --remove gemstone-server
 # sudo dpkg --purge gemstone-server
 # sudo apt remove gemstone-server
@@ -18,8 +18,8 @@
 # export ARCHITECTURE="amd64"
 # export ARCHITECTURE="arm64"
 export PACKAGE_NAME="gemstone-server_${VERSION}-${PACKAGE_NUM}_${ARCHITECTURE}"
-export BUILD_DIR="/tmp/${PACKAGE_NAME}"
-export PRODUCT="/tmp/gemstone-server-${VERSION}-${ARCHITECTURE}"
+export BUILD_DIR="/pitcairn1/users/jfoster/${PACKAGE_NAME}"
+export PRODUCT="/pitcairn1/users/jfoster/gemstone-server-${VERSION}-${ARCHITECTURE}"
 if [ "${ARCHITECTURE}" = "amd64" ]; then
   export NAME=GemStone64Bit${VERSION}-x86_64.Linux
 else
