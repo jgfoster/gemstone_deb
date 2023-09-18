@@ -1,13 +1,13 @@
 ---
 # Playbook to build GemStone package
-# ansible-playbook 2_build_ppa.yml -v
+# ansible-playbook 2_build_ppa.yml --extra-vars "version=3.7.0 priority=30700"
 #
 
-- name: Build GemStone packages for amd64 and arm64
+- name: Build GemStone packages for Linux (amd64 and arm64)
   hosts: pitcairn
   vars:
-    version: "3.6.5"
-    priority: "30605"
+    version: "3.7.0"
+    priority: "30700"
     package_num: "1"
   tasks:
     - name: Install dpkg-dev package
@@ -41,8 +41,7 @@
         single_branch: true
         dest: /pitcairn1/users/jfoster/gemstone_deb
         update: true
-        version: main
-      register: git_checkout
+        version: pitcairn
     - name: Build amd64 package
       ansible.builtin.shell: |
         cd /pitcairn1/users/jfoster/gemstone_deb
@@ -51,7 +50,6 @@
         export PACKAGE_NUM="{{ package_num }}"
         export ARCHITECTURE="amd64"
         ./build.sh
-      when: git_checkout is success and git_checkout is changed
     - name: Build arm64 package
       ansible.builtin.shell: |
         cd /pitcairn1/users/jfoster/gemstone_deb
@@ -60,4 +58,3 @@
         export PACKAGE_NUM="{{ package_num }}"
         export ARCHITECTURE="arm64"
         ./build.sh
-      when: git_checkout is success and git_checkout is changed

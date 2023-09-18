@@ -1,7 +1,7 @@
 ---
 # Playbook to build GemStone repository
 # https://www.digitalocean.com/community/tutorials/how-to-use-reprepro-for-a-secure-package-repository-on-ubuntu-14-04
-# ansible-playbook 3_build_repo.yml -v
+# ansible-playbook 3_build_repo.yml
 #
 
 - name: Build GemStone repository
@@ -32,3 +32,7 @@
     - name: Add packages to repository
       ansible.builtin.shell: reprepro -b /pitcairn1/users/jfoster/ppa includedeb stable {{ item }}
       loop: "{{ file_names.stdout_lines }}"
+    - name: Copy dists to PPA
+      ansible.builtin.shell: rsync -rlpt --delete -e "ssh -p 2222" /pitcairn1/users/jfoster/ppa/dists ubuntu@alpha-ppa.gemtalksystems.com:/srv/ppa/alpha/dists
+    - name: Copy pool to PPA
+      ansible.builtin.shell: rsync -rlpt --delete -e "ssh -p 2222" /pitcairn1/users/jfoster/ppa/pool ubuntu@alpha-ppa.gemtalksystems.com:/srv/ppa/alpha/pool
