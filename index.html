@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+
+<body>
+  <h1>GemStone/S 64 Bit Debian Package Repository</h1>
+  <p>To use this package repository, add it to your sources list with a public key, then update and install!</p>
+  <hr>
+  <code>
+    sudo curl -o /etc/apt/sources.list.d/gemstone.sources \<br />
+    &nbsp;http://alpha-ppa.gemtalksystems.com/gemstone.sources<br />
+    sudo curl -o /etc/apt/keyrings/gemstone.gpg \<br />
+    &nbsp;http://alpha-ppa.gemtalksystems.com/gemstone.gpg<br />
+    sudo apt update && sudo apt install gemstone-server<br />
+      </code>
+  <p>This will ask you some questions and do the install. To "preseed" answers for a non-interactive install, do the
+    following:
+    <code><br /><br />
+    echo gemstone-server gemstone-server/password password mySecret | debconf-set-selections<br />
+    echo gemstone-server gemstone-server/password-confirm password mySecret | debconf-set-selections<br />
+    echo gemstone-server gemstone-server/unicode-comparison boolean yes | debconf-set-selections<br />
+    export DEBIAN_FRONTEND=noninteractive<br />
+    sudo apt update -q && sudo apt install -q -y gemstone-server<br />
+      </code>
+  </p>
+  <p>Alternatively, you can <a href="https://alpha-ppa.gemtalksystems.com/pool/main/g/gemstone-server/">browse</a> the
+    repository directly, download the appropriate package, and use
+    <code>sudo dpkg --install gemstone-server_*.deb</code> to install it.</code>
+  </p>
+  <hr>
+  <p>See <a href="https://www.youtube.com/watch?v=ogSrDgNbSRs">this video</a> for an example of how to install it.</p>
+</body>
+
+</html>
